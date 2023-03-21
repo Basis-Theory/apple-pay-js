@@ -1,0 +1,34 @@
+{
+  "name": "@basis-theory/apple-pay-js",
+  "version": "0.0.1",
+  "description": "Basis Theory utility for decrypting Apple Pay Tokens",
+  "main": "dist/index.js",
+  "repository": "https://github.com/Basis-Theory/apple-pay",
+  "license": "Apache-2.0",
+  "source": "src/index.ts",
+  "types": "dist/types.d.ts",
+  "scripts": {
+    "build": "parcel build"
+  },
+  "targets": {
+    "main": {
+      "sourceMap": false
+    }
+  },
+  "prettier": "@basis-theory/eslint-config/prettier",
+  "dependencies": {
+    "@fidm/x509": "^1.2.1",
+    "ec-key": "^0.0.4",
+    "node-forge": "^1.3.1",
+    "typescript": "^4.9.5"
+  },
+  "devDependencies": {
+    "@basis-theory/eslint-config": "^1.0.13",
+    "@parcel/packager-ts": "2.8.3",
+    "@parcel/transformer-typescript-types": "2.8.3",
+    "@types/node": "^18.15.3",
+    "eslint": "^7.32.0",
+    "parcel": "^2.8.3",
+    "prettier": "^2.8.5"
+  }
+}
