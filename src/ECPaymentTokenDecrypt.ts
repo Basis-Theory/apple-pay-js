@@ -1,5 +1,6 @@
 import * as x509 from '@fidm/x509';
 import * as crypto from 'crypto';
+// import * as ECKey from 'ec-key';
 import * as forge from 'node-forge';
 import type { ECPaymentTokenPaymentData, DecryptedPaymentData } from './types';
 
@@ -9,42 +10,49 @@ const ECKey = require('ec-key');
 
 const MERCHANT_ID_FIELD_OID = '1.2.840.113635.100.6.32';
 
+interface ECPaymentTokenDecryptOptions {
+  certificatePem: Buffer;
+  privatePem: Buffer;
+}
+
 /**
  * Initializing an instance of `PaymentToken` with JSON values present in the Apple Pay token string
  * JSON representation - https://developer.apple.com/library/ios/documentation/PassKit/Reference/PaymentTokenJSON/PaymentTokenJSON.html
  */
 export class ECPaymentTokenDecrypt {
-  private readonly ephemeralPublicKey: string;
+  // There is no type definitions for ECKey
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  private readonly privateKey: any;
 
-  private readonly cipherText: string;
+  private readonly merchantId: string;
 
-  public constructor(ecPaymentData: ECPaymentTokenPaymentData) {
-    this.ephemeralPublicKey = ecPaymentData.header.ephemeralPublicKey;
-    this.cipherText = ecPaymentData.data;
+  public constructor({
+    certificatePem,
+    privatePem,
+  }: ECPaymentTokenDecryptOptions) {
+    this.privateKey = new ECKey(privatePem, 'pem');
+    this.merchantId = this.extractMerchantId(certificatePem);
   }
 
   /**
    * Decrypting the token using the PEM formatted merchant certificate and private key (the latter of which, at least, is managed by a third-party)
    */
-  public decrypt(
-    certPem: Buffer,
-    privatePem: Buffer | string
-  ): DecryptedPaymentData {
-    const sharedSecret = this.sharedSecret(privatePem);
-    const merchantId = this.merchantId(certPem);
-    const symmetricKey = this.symmetricKey(merchantId, sharedSecret);
-    const decrypted = this.decryptCiphertext(symmetricKey);
+  public decrypt(paymentData: ECPaymentTokenPaymentData): DecryptedPaymentData {
+    const {
+      header: { ephemeralPublicKey },
+      data,
+    } = paymentData;
 
-    return JSON.parse(decrypted);
-
-    // TODO: check this old commented code below
+    const sharedSecret = this.generateSharedSecret(ephemeralPublicKey);
+    const symmetricKey = this.deriveSymmetricKey(sharedSecret);
+    const decrypted = this.decryptCiphertext(symmetricKey, data);
 
     // matches the second close brace and returns everything before and including
     // the second close brace. we need this because the result often returns with
     // some random cruft at the end, such as `�d*�<?}ތ0j{��[`
-    // const regex = /^.+}.*?(})/g
+    const regex = /^[^}]+\}[^}]*\}/gu;
 
-    // return JSON.parse(decrypted.match(regex)[0])
+    return JSON.parse(decrypted.match(regex)[0]);
   }
 
   /**
@@ -52,9 +60,9 @@ export class ECPaymentTokenDecrypt {
    * using Elliptic Curve Diffie-Hellman (id-ecDH 1.3.132.1.12).
    * As the Apple Pay certificate is issued using prime256v1 encryption, create elliptic curve key instances using the package - https://www.npmjs.com/package/ec-key
    */
-  private sharedSecret(privatePem: Buffer | string): string {
-    const prv = new ECKey(privatePem, 'pem'); // Create a new ECkey instance from PEM formatted string
-    const publicEc = new ECKey(this.ephemeralPublicKey, 'spki'); // Create a new ECKey instance from a base-64 spki string
+  private generateSharedSecret(ephemeralPublicKey: string): string {
+    const prv = new ECKey(this.privateKey, 'pem'); // Create a new ECkey instance from PEM formatted string
+    const publicEc = new ECKey(ephemeralPublicKey, 'spki'); // Create a new ECKey instance from a base-64 spki string
 
     return prv.computeSecret(publicEc).toString('hex'); // Compute secret using private key for provided ephemeral public key
   }
@@ -65,7 +73,7 @@ export class ECPaymentTokenDecrypt {
    * This an id extension of the certificate it’s not your merchant identifier.
    * Parsing the certificate with the x509 NPM package - https://www.npmjs.com/package/x509#x509parsecert-cert-
    */
-  private merchantId(cert: Buffer | string): string {
+  private extractMerchantId(cert: Buffer | string): string {
     try {
       const info = x509.Certificate.fromPEM(
         typeof cert === 'string' ? Buffer.from(cert) : cert
@@ -75,8 +83,7 @@ export class ECPaymentTokenDecrypt {
       );
 
       return oid.value.toString().slice(2);
-    } catch (error) {
-      console.error(error);
+    } catch {
       throw new Error('Unable to extract merchant ID from certificate.');
     }
   }
@@ -86,9 +93,9 @@ export class ECPaymentTokenDecrypt {
    * https://nvlpubs.nist.gov/nistpubs/Legacy/SP/nistspecialpublication800-56ar.pdf
    * The symmetric key is a sha256 hash that contains shared secret token plus encoding information
    */
-  private symmetricKey(merchantId: string, sharedSecret: string): string {
+  private deriveSymmetricKey(sharedSecret: string): string {
     const KDF_ALGORITHM = '\u000Did-aes256-GCM'; // The byte (0x0D) followed by the ASCII string "id-aes256-GCM". The first byte of this value is an unsigned integer that indicates the string’s length in bytes; the remaining bytes are a constiable-length string.
-    const KDF_PARTY_V = Buffer.from(merchantId, 'hex').toString('binary'); // The SHA-256 hash of your merchant ID string literal; 32 bytes in size.
+    const KDF_PARTY_V = Buffer.from(this.merchantId, 'hex').toString('binary'); // The SHA-256 hash of your merchant ID string literal; 32 bytes in size.
     const KDF_PARTY_U = 'Apple'; // The ASCII string "Apple". This value is a fixed-length string.
     const KDF_INFO = KDF_ALGORITHM + KDF_PARTY_U + KDF_PARTY_V;
 
@@ -106,8 +113,8 @@ export class ECPaymentTokenDecrypt {
    * Decrypting the cipher text from the token (data in the original payment token) key using AES–256 (id-aes256-GCM 2.16.840.1.101.3.4.1.46), with an initialization vector of 16 null bytes and no associated authentication data.
    *
    */
-  private decryptCiphertext(symmetricKey: string): string {
-    const data = forge.util.decode64(this.cipherText);
+  private decryptCiphertext(symmetricKey: string, data: string): string {
+    const decoded = forge.util.decode64(data);
     const SYMMETRIC_KEY = forge.util.createBuffer(
       Buffer.from(symmetricKey, 'hex').toString('binary')
     );
@@ -116,10 +123,10 @@ export class ECPaymentTokenDecrypt {
         'binary'
       )
     ); // Initialization vector of 16 null bytes
-    const CIPHERTEXT = forge.util.createBuffer(data.slice(0, -16));
+    const CIPHERTEXT = forge.util.createBuffer(decoded.slice(0, -16));
 
     const decipher = forge.cipher.createDecipher('AES-GCM', SYMMETRIC_KEY); // Creates and returns a Decipher object that uses the given algorithm and password (key)
-    const tag = data.slice(-16, data.length);
+    const tag = decoded.slice(-16, decoded.length);
 
     decipher.start({
       iv: IV,

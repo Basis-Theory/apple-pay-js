@@ -1,0 +1,35 @@
+import * as fs from 'fs';
+import { ECPaymentTokenDecrypt, ECPaymentTokenPaymentData } from '../src';
+import token from './fixtures/token.json';
+
+describe('decrypt', () => {
+  test('should decrypt Apple Pay JS elliptic-curve encrypted token', () => {
+    const certificatePem = fs.readFileSync(
+      'test/fixtures/certificates/payment-processing/apple_pay.pem'
+    );
+    const privatePem = fs.readFileSync(
+      'test/fixtures/certificates/payment-processing/private.key'
+    );
+
+    const decrypt = new ECPaymentTokenDecrypt({
+      certificatePem,
+      privatePem,
+    });
+    const decrypted = decrypt.decrypt(
+      token.paymentData as ECPaymentTokenPaymentData
+    );
+
+    expect(decrypted).toStrictEqual({
+      applicationPrimaryAccountNumber: '4784000000380075', // this is a DPAN, only works with a cryptogram
+      applicationExpirationDate: '231231',
+      currencyCode: '840',
+      transactionAmount: 100,
+      deviceManufacturerIdentifier: '040010030273',
+      paymentDataType: '3DSecure',
+      paymentData: {
+        onlinePaymentCryptogram: '/4hD3+cAE5A3VxSlUf4yMAACAAA=', // this cryptogram was issued for an expired transaction
+        eciIndicator: '7',
+      },
+    });
+  });
+});

@@ -54,4 +54,4 @@ interface ApplePayPayment {
   shippingContact?: ApplePayPaymentContact;
 }
 
-export type { ApplePayPayment };
+export type { ApplePayPayment, ApplePayPaymentToken };
