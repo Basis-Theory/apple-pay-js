@@ -6,24 +6,24 @@ Utility for decrypting Apple Pay Tokens.
 
 ```typescript
 import {
+  ApplePaymentTokenContext,
   ApplePayPaymentToken,
-  ECPaymentTokenDecrypt,
-  ECPaymentTokenPaymentData,
-} from '@basis-theory/apple-pay';
+} from '@basis-theory/apple-pay-js';
 import fs from 'fs';
 
 const decryptApplePayToken = (token: ApplePayPaymentToken) => {
-  const cert = fs.readFileSync(
+  const certificatePem = fs.readFileSync(
     './certificates/apple/payment-processing/apple_pay.pem'
   );
-  const key = fs.readFileSync(
+  const privateKeyPem = fs.readFileSync(
     './certificates/apple/payment-processing/private.key'
   );
 
-  const decrypt = new ECPaymentTokenDecrypt(
-    token.paymentData as ECPaymentTokenPaymentData
-  );
-  const decrypted = decrypt.decrypt(cert, key);
+  const context = new ApplePaymentTokenContext({
+    certificatePem,
+    privateKeyPem,
+  });
+  const decrypted = context.decrypt(token.paymentData);
 
   return decrypted;
 };

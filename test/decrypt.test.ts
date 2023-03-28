@@ -4,19 +4,19 @@ import token from './fixtures/token.json';
 
 describe('decrypt', () => {
   let certificatePem: Buffer,
-    privatePem: Buffer,
+    privateKeyPem: Buffer,
     context: ApplePaymentTokenContext;
 
   beforeEach(() => {
     certificatePem = fs.readFileSync(
       'test/fixtures/certificates/payment-processing/apple_pay.pem'
     );
-    privatePem = fs.readFileSync(
+    privateKeyPem = fs.readFileSync(
       'test/fixtures/certificates/payment-processing/private.key'
     );
     context = new ApplePaymentTokenContext({
       certificatePem,
-      privatePem,
+      privateKeyPem,
     });
   });
 

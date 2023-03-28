@@ -3,7 +3,7 @@ import type { DecryptedPaymentData, PaymentTokenPaymentData } from './types';
 
 export interface ApplePaymentTokenContextOptions {
   certificatePem: Buffer;
-  privatePem: Buffer;
+  privateKeyPem: Buffer;
 }
 
 export class ApplePaymentTokenContext {

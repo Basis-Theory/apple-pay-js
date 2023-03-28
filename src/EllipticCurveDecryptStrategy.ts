@@ -24,9 +24,9 @@ export class EllipticCurveDecryptStrategy {
 
   public constructor({
     certificatePem,
-    privatePem,
+    privateKeyPem,
   }: ApplePaymentTokenContextOptions) {
-    this.privateKey = new ECKey(privatePem, 'pem');
+    this.privateKey = new ECKey(privateKeyPem, 'pem');
     this.merchantId = this.extractMerchantId(certificatePem);
   }
 
