@@ -1,22 +1,36 @@
 import * as fs from 'fs';
-import { ECPaymentTokenDecrypt, ECPaymentTokenPaymentData } from '../src';
+import { ApplePaymentTokenContext, PaymentTokenPaymentData } from '../src';
 import token from './fixtures/token.json';
 
 describe('decrypt', () => {
-  test('should decrypt Apple Pay JS elliptic-curve encrypted token', () => {
-    const certificatePem = fs.readFileSync(
+  let certificatePem: Buffer,
+    privatePem: Buffer,
+    context: ApplePaymentTokenContext;
+
+  beforeEach(() => {
+    certificatePem = fs.readFileSync(
       'test/fixtures/certificates/payment-processing/apple_pay.pem'
     );
-    const privatePem = fs.readFileSync(
+    privatePem = fs.readFileSync(
       'test/fixtures/certificates/payment-processing/private.key'
     );
-
-    const decrypt = new ECPaymentTokenDecrypt({
+    context = new ApplePaymentTokenContext({
       certificatePem,
       privatePem,
     });
-    const decrypted = decrypt.decrypt(
-      token.paymentData as ECPaymentTokenPaymentData
+  });
+
+  test('should throw unsupported payment data version', () => {
+    expect(() =>
+      context.decrypt({
+        version: 'RSA_v1',
+      } as PaymentTokenPaymentData)
+    ).toThrow('Unsupported decryption for payment data version: RSA_v1');
+  });
+
+  test('should decrypt Apple Pay JS elliptic-curve encrypted token', () => {
+    const decrypted = context.decrypt(
+      token.paymentData as PaymentTokenPaymentData
     );
 
     expect(decrypted).toStrictEqual({

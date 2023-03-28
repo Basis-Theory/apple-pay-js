@@ -2,6 +2,7 @@ import * as x509 from '@fidm/x509';
 import * as crypto from 'crypto';
 // import * as ECKey from 'ec-key';
 import * as forge from 'node-forge';
+import type { ApplePaymentTokenContextOptions } from './ApplePaymentTokenContext';
 import type { ECPaymentTokenPaymentData, DecryptedPaymentData } from './types';
 
 // TODO couldn't make this work with a import statement using parcel
@@ -10,16 +11,11 @@ const ECKey = require('ec-key');
 
 const MERCHANT_ID_FIELD_OID = '1.2.840.113635.100.6.32';
 
-interface ECPaymentTokenDecryptOptions {
-  certificatePem: Buffer;
-  privatePem: Buffer;
-}
-
 /**
  * Initializing an instance of `PaymentToken` with JSON values present in the Apple Pay token string
  * JSON representation - https://developer.apple.com/library/ios/documentation/PassKit/Reference/PaymentTokenJSON/PaymentTokenJSON.html
  */
-export class ECPaymentTokenDecrypt {
+export class EllipticCurveDecryptStrategy {
   // There is no type definitions for ECKey
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   private readonly privateKey: any;
@@ -29,7 +25,7 @@ export class ECPaymentTokenDecrypt {
   public constructor({
     certificatePem,
     privatePem,
-  }: ECPaymentTokenDecryptOptions) {
+  }: ApplePaymentTokenContextOptions) {
     this.privateKey = new ECKey(privatePem, 'pem');
     this.merchantId = this.extractMerchantId(certificatePem);
   }
