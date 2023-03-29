@@ -11,6 +11,8 @@
     "build": "parcel build",
     "test": "jest",
     "test:cov": "jest --coverage",
+    "lint": "eslint . --quiet --ignore-path .gitignore",
+    "lint:fix": "eslint . --fix --ignore-path .gitignore",
     "postinstall": "husky install",
     "prepack": "pinst --disable",
     "postpack": "pinst --enable"

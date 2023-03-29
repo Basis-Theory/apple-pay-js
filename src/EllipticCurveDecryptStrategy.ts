@@ -5,7 +5,7 @@ import * as forge from 'node-forge';
 import type { ApplePaymentTokenContextOptions } from './ApplePaymentTokenContext';
 import type { ECPaymentTokenPaymentData, DecryptedPaymentData } from './types';
 
-// TODO couldn't make this work with a import statement using parcel
+// couldn't make this work with a import statement using parcel
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const ECKey = require('ec-key');
 
