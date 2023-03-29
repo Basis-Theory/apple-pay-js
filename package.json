@@ -37,7 +37,7 @@
     "@parcel/transformer-typescript-types": "2.8.3",
     "@types/jest": "^29.5.0",
     "@types/node": "^18.15.11",
-    "eslint": "^7.32.0",
+    "eslint": "^8.37.0",
     "husky": "^8.0.0",
     "jest": "^29.5.0",
     "parcel": "^2.8.3",
