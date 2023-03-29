@@ -12,7 +12,6 @@ jobs:
         node: ['lts/*']
         os: [ubuntu-latest]
     env:
-      CI: 1 # prevents extra Cypress installation progress messages
       HUSKY: 0 # disables husky hooks
     steps:
       - name: Checkout repo
@@ -28,7 +27,7 @@ jobs:
         run: make verify
 
       - name: Monitor coverage
-        uses: slavcodev/coverage-monitor-action@1.2.0
+        uses: slavcodev/coverage-monitor-action@1.8.0
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           clover_file: 'coverage/clover.xml'
