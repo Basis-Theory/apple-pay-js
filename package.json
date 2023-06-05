@@ -31,7 +31,7 @@
   },
   "devDependencies": {
     "@basis-theory/eslint-config": "^1.0.13",
-    "@commitlint/cli": "^17.5.1",
+    "@commitlint/cli": "^17.6.5",
     "@commitlint/config-conventional": "^17.4.4",
     "@parcel/packager-ts": "2.8.3",
     "@parcel/transformer-typescript-types": "2.8.3",
