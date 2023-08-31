@@ -20,8 +20,10 @@ module.exports = async function (req) {
   const { 
     bt,
     args: {
-      // JSON object is expected
-      applePayToken
+      applePayToken: { 
+        paymentData, 
+        ...applePayToken 
+      },
     },
     configuration: {
       CERTIFICATE_PEM: certificatePem,
@@ -39,8 +41,8 @@ module.exports = async function (req) {
   const {
     applicationPrimaryAccountNumber,
     applicationExpirationDate,
-    ...paymentData
-  } = context.decrypt(applePayToken.paymentData);
+    ...restPaymentData
+  } = context.decrypt(paymentData);
   
   // vaults Apple Device PAN (DPAN)
   const token = await bt.tokens.create({
@@ -55,11 +57,13 @@ module.exports = async function (req) {
   return {    
     raw: {
       token,
-      paymentData,
-    }    
-  }
-  
-}
+      applePayToken: {
+        paymentData: restPaymentData,
+        ...applePayToken,
+      },
+    },
+  };
+};
 ```
 
 ## Local Usage
