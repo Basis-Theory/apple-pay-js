@@ -1,6 +1,7 @@
 import * as fs from 'fs';
 import { ApplePaymentTokenContext, PaymentTokenPaymentData } from '../src';
-import token from './fixtures/token.json';
+import iosToken from './fixtures/token.ios.json';
+import webToken from './fixtures/token.web.json';
 
 describe('decrypt', () => {
   let certificatePem: Buffer,
@@ -28,22 +29,43 @@ describe('decrypt', () => {
     ).toThrow('Unsupported decryption for payment data version: RSA_v1');
   });
 
-  test('should decrypt Apple Pay JS elliptic-curve encrypted token', () => {
-    const decrypted = context.decrypt(
-      token.paymentData as PaymentTokenPaymentData
-    );
-
-    expect(decrypted).toStrictEqual({
-      applicationPrimaryAccountNumber: '4784000000380075', // this is a DPAN, only works with a cryptogram
-      applicationExpirationDate: '231231',
-      currencyCode: '840',
-      transactionAmount: 100,
-      deviceManufacturerIdentifier: '040010030273',
-      paymentDataType: '3DSecure',
-      paymentData: {
-        onlinePaymentCryptogram: '/4hD3+cAE5A3VxSlUf4yMAACAAA=', // this cryptogram was issued for an expired transaction
-        eciIndicator: '7',
+  test.each([
+    [
+      'Web',
+      webToken,
+      {
+        applicationPrimaryAccountNumber: '4784000000380075',
+        applicationExpirationDate: '231231',
+        currencyCode: '840',
+        transactionAmount: 100,
+        deviceManufacturerIdentifier: '040010030273',
+        paymentDataType: '3DSecure',
+        paymentData: {
+          onlinePaymentCryptogram: '/4hD3+cAE5A3VxSlUf4yMAACAAA=',
+          eciIndicator: '7',
+        },
       },
-    });
-  });
+    ],
+    [
+      'iOS',
+      iosToken,
+      {
+        applicationPrimaryAccountNumber: '5155272275025002',
+        applicationExpirationDate: '260630',
+        currencyCode: '840',
+        transactionAmount: 1099,
+        deviceManufacturerIdentifier: '050110030273',
+        paymentDataType: '3DSecure',
+        paymentData: {
+          onlinePaymentCryptogram: 'AOPWdiKEcY85ALsfCxqBAoABFA==',
+        },
+      },
+    ],
+  ])(
+    'should decrypt %p Apple Payment elliptic-curve encryption token',
+    (_, token, decrypted) =>
+      expect(
+        context.decrypt(token.paymentData as PaymentTokenPaymentData)
+      ).toStrictEqual(decrypted)
+  );
 });

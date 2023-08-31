@@ -2,13 +2,19 @@
   "name": "@basis-theory/apple-pay-js",
   "version": "0.0.1",
   "description": "Basis Theory utility for decrypting Apple Pay Tokens",
-  "main": "dist/index.js",
   "repository": "https://github.com/Basis-Theory/apple-pay",
   "license": "Apache-2.0",
   "source": "src/index.ts",
   "types": "dist/types.d.ts",
+  "main": "dist/index.js",
+  "engines": {
+    "node": ">=16"
+  },
   "scripts": {
-    "build": "parcel build",
+    "build": "yarn clean && concurrently 'yarn build:module' 'yarn build:package'",
+    "build:module": "parcel build",
+    "build:package": "node prepare.js",
+    "clean": "rimraf dist",
     "test": "jest",
     "test:cov": "jest --coverage",
     "lint": "eslint . --quiet --ignore-path .gitignore",
@@ -26,24 +32,26 @@
   "dependencies": {
     "@fidm/x509": "^1.2.1",
     "ec-key": "^0.0.4",
-    "node-forge": "^1.3.1",
-    "typescript": "^4.9.5"
+    "node-forge": "^1.3.1"
   },
   "devDependencies": {
-    "@basis-theory/eslint-config": "^1.0.13",
-    "@commitlint/cli": "^17.5.1",
-    "@commitlint/config-conventional": "^17.4.4",
-    "@parcel/packager-ts": "2.8.3",
-    "@parcel/transformer-typescript-types": "2.8.3",
-    "@types/jest": "^29.5.0",
-    "@types/node": "^18.15.11",
+    "@basis-theory/eslint-config": "^1.2.0",
+    "@commitlint/cli": "^17.7.1",
+    "@commitlint/config-conventional": "^17.7.0",
+    "@parcel/packager-ts": "2.9.3",
+    "@parcel/transformer-typescript-types": "2.9.3",
+    "@types/jest": "^29.5.4",
+    "@types/node": "^16.18.46",
+    "concurrently": "^8.2.1",
     "eslint": "^7.32.0",
-    "husky": "^8.0.0",
-    "jest": "^29.5.0",
-    "parcel": "^2.8.3",
+    "husky": "^8.0.3",
+    "jest": "^29.6.4",
+    "parcel": "^2.9.3",
     "pinst": "^3.0.0",
-    "prettier": "^2.8.7",
+    "prettier": "^2.8.8",
     "pretty-quick": "^3.1.3",
-    "ts-jest": "^29.0.5"
+    "rimraf": "^5.0.1",
+    "ts-jest": "^29.1.1",
+    "typescript": "^4.9.5"
   }
 }

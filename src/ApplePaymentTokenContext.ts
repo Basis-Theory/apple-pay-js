@@ -6,6 +6,9 @@ export interface ApplePaymentTokenContextOptions {
   privateKeyPem: Buffer;
 }
 
+/**
+ * Context used for decrypting Apple Payment Tokens.
+ */
 export class ApplePaymentTokenContext {
   public constructor(
     private readonly options: ApplePaymentTokenContextOptions

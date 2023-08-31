@@ -1,8 +1,72 @@
 # Basis Theory Apple Pay JS
 
-Utility for decrypting Apple Pay Tokens.
+Utility library for decrypting Apple Payment Tokens in Node.js environments.
 
-## Usage
+| Encryption | Region     | Support |
+|------------|------------|---------|
+| RSA        | China      | ❌       |
+| ECC        | All Others | ✅       |
+
+## Reactors Usage
+
+The example below can be used as a template for decrypting the Apple Payment Token using [Reactors](https://developers.basistheory.com/docs/concepts/what-are-reactors).
+
+```javascript
+const {
+  ApplePaymentTokenContext
+} = require('@basis-theory/apple-pay-js');
+
+module.exports = async function (req) {  
+  const { 
+    bt,
+    args: {
+      // JSON object is expected
+      applePayToken
+    },
+    configuration: {
+      CERTIFICATE_PEM: certificatePem,
+      PRIVATE_KEY_PEM: privateKeyPem,
+    },
+  } = req;
+
+  // creates token context from certificate / key configured in Reactor
+  const context = new ApplePaymentTokenContext({
+    certificatePem,
+    privateKeyPem,
+  });
+  
+  // decrypts Apple's PKPaymentToken paymentData
+  const {
+    applicationPrimaryAccountNumber,
+    applicationExpirationDate,
+    ...paymentData
+  } = context.decrypt(applePayToken.paymentData);
+  
+  // vaults Apple Device PAN (DPAN)
+  const token = await bt.tokens.create({
+    type: 'card',
+    data: {
+      number: applicationPrimaryAccountNumber,
+      expiration_month: applicationExpirationDate.slice(2, 4),
+      expiration_year: `20${applicationExpirationDate.slice(-2)}`
+    }
+  });
+  
+  return {    
+    raw: {
+      token,
+      paymentData,
+    }    
+  }
+  
+}
+```
+
+## Local Usage
+
+The example below shows how to decrypt the Apple Payment Token using locally loaded certificates, useful in development and debugging scenarios.
+
+If you need help understanding the risks associated with decrypting and manipulating the various forms of cardholder data in your own systems, [reach out to us](https://basistheory.com/contact).
 
 ```typescript
 import {
