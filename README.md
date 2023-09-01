@@ -12,18 +12,13 @@ Utility library for decrypting Apple Payment Tokens in Node.js environments.
 The example below can be used as a template for decrypting the Apple Payment Token using [Reactors](https://developers.basistheory.com/docs/concepts/what-are-reactors).
 
 ```javascript
-const {
-  ApplePaymentTokenContext
-} = require('@basis-theory/apple-pay-js');
+const { ApplePaymentTokenContext } = require('@basis-theory/apple-pay-js');
 
-module.exports = async function (req) {  
-  const { 
+module.exports = async function (req) {
+  const {
     bt,
     args: {
-      applePayToken: { 
-        paymentData, 
-        ...applePayToken 
-      },
+      applePayToken: { paymentData, ...applePayToken },
     },
     configuration: {
       CERTIFICATE_PEM: certificatePem,
@@ -36,25 +31,25 @@ module.exports = async function (req) {
     certificatePem,
     privateKeyPem,
   });
-  
+
   // decrypts Apple's PKPaymentToken paymentData
   const {
     applicationPrimaryAccountNumber,
     applicationExpirationDate,
     ...restPaymentData
   } = context.decrypt(paymentData);
-  
+
   // vaults Apple Device PAN (DPAN)
   const token = await bt.tokens.create({
     type: 'card',
     data: {
       number: applicationPrimaryAccountNumber,
       expiration_month: applicationExpirationDate.slice(2, 4),
-      expiration_year: `20${applicationExpirationDate.slice(-2)}`
-    }
+      expiration_year: `20${applicationExpirationDate.slice(-2)}`,
+    },
   });
-  
-  return {    
+
+  return {
     raw: {
       token,
       applePayToken: {
