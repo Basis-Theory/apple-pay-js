@@ -3,9 +3,9 @@
 Utility library for decrypting Apple Payment Tokens in Node.js environments.
 
 | Encryption | Region     | Support |
-|------------|------------|---------|
-| RSA        | China      | ❌       |
-| ECC        | All Others | ✅       |
+| ---------- | ---------- | ------- |
+| RSA        | China      | ❌      |
+| ECC        | All Others | ✅      |
 
 ## Reactors Usage
 
