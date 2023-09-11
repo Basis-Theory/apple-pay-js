@@ -1,0 +1,17 @@
+# package manager
+node_modules
+.nvmrc
+.npmrc
+
+# build
+.parcel-cache
+dist
+
+# IDE
+.idea
+.vscode
+
+# MISC
+*.log
+.DS_Store
+coverage
