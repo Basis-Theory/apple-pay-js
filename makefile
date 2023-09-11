@@ -8,3 +8,6 @@ build:
 
 acceptance:
 	./scripts/acceptance.sh
+
+release:
+	yarn release
