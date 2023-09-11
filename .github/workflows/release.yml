@@ -1,0 +1,62 @@
+name: Release
+
+on:
+  push:
+    branches: [master, release]
+
+jobs:
+  build-release:
+    runs-on: ubuntu-latest
+    env:
+      CI: 1
+      HUSKY: 0 # disables husky hooks
+      NPM_TOKEN: ${{ secrets.NPM_RELEASE_TOKEN }}
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v3
+        with:
+          token: ${{ secrets.SEMANTIC_RELEASE_PAT }}
+
+      - name: Start Deploy Message
+        uses: Basis-Theory/github-actions/deploy-slack-action@master
+        with:
+          slack-api-token: ${{ secrets.SLACK_DUCKBOT_API_KEY }}
+          channel: ${{ vars.SLACK_DUCKBOT_PRODUCT_DEPLOY_CHANNEL }}
+
+      - name: Use Node LTS
+        uses: actions/setup-node@v3
+        with:
+          cache: yarn
+          node-version: lts/*
+
+      - name: Install deps (with cache)
+        uses: bahmutov/npm-install@v1
+        with:
+          install-command: yarn --frozen-lockfile --no-progress --ignore-scripts
+
+      - name: Build
+        run: make build
+        env:
+          SKIP_INSTALL: 1 # install with cache was done already
+
+      - name: Release
+        run: make release
+        env:
+          GITHUB_TOKEN: ${{ secrets.SEMANTIC_RELEASE_PAT }}
+
+      - name: Slack Deploy / Release Alert
+        uses: 8398a7/action-slack@v3
+        if: always()
+        with:
+          status: ${{ job.status }}
+          channel: ${{ secrets.SLACK_RELEASE_CHANNEL_ID }}
+          fields: 'repo,commit,message,workflow,job'
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+      - name: Stop Deploy Message
+        if: always()
+        uses: Basis-Theory/github-actions/deploy-slack-action@master
+        with:
+          slack-api-token: ${{ secrets.SLACK_DUCKBOT_API_KEY }}
+          channel: ${{ vars.SLACK_DUCKBOT_PRODUCT_DEPLOY_CHANNEL }}
+          status: 'done'
