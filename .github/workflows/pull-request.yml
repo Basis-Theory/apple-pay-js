@@ -31,7 +31,7 @@ jobs:
         with:
           args: --all-sub-projects --severity-threshold=high
 
-  build:
+  verify:
     runs-on: ubuntu-latest
     env:
       HUSKY: 0 # disables husky hooks
