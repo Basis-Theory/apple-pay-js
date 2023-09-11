@@ -5,23 +5,45 @@ on:
     branches: [master]
 
 jobs:
+  scan-code:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Snyk code scan
+        uses: snyk/actions/node@master
+        env:
+          SNYK_TOKEN: ${{ secrets.SNYK_API_KEY }}
+        with:
+          command: code test --all-sub-projects --severity-threshold=medium
+
+  scan-deps:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Snyk dependency scan
+        uses: snyk/actions/node@master
+        env:
+          SNYK_TOKEN: ${{ secrets.SNYK_API_KEY }}
+        with:
+          args: --all-sub-projects --severity-threshold=high
+
   build:
-    runs-on: ${{ matrix.os }}
-    strategy:
-      matrix:
-        node: ['lts/*']
-        os: [ubuntu-latest]
+    runs-on: ubuntu-latest
     env:
       HUSKY: 0 # disables husky hooks
     steps:
       - name: Checkout repo
         uses: actions/checkout@v3
 
-      - name: Use Node ${{ matrix.node }}
+      - name: Use Node LTS
         uses: actions/setup-node@v3
         with:
           cache: yarn
-          node-version: ${{ matrix.node }}
+          node-version: lts/*
 
       - name: Verify
         run: make verify
