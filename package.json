@@ -67,5 +67,16 @@
   },
   "publishConfig": {
     "access": "public"
-  }
+  },
+  "keywords": [
+    "apple",
+    "pay",
+    "decrypt",
+    "token",
+    "node",
+    "pkpaymenttoken",
+    "detokenization",
+    "tokenization",
+    "debundle"
+  ]
 }

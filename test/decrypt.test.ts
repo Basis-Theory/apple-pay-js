@@ -1,71 +1,85 @@
 import * as fs from 'fs';
 import { ApplePaymentTokenContext, PaymentTokenPaymentData } from '../src';
-import iosToken from './fixtures/token.ios.json';
-import webToken from './fixtures/token.web.json';
+import newToken from './fixtures/token.new.json';
+import oldToken from './fixtures/token.old.json';
+
+const oldCertificatePem = fs.readFileSync(
+  'test/fixtures/certificates/payment-processing/apple_pay.old.pem'
+);
+const oldPrivateKeyPem = fs.readFileSync(
+  'test/fixtures/certificates/payment-processing/private.old.key'
+);
+const newCertificatePem = fs.readFileSync(
+  'test/fixtures/certificates/payment-processing/apple_pay.new.pem'
+);
+const newPrivateKeyPem = fs.readFileSync(
+  'test/fixtures/certificates/payment-processing/private.new.key'
+);
 
 describe('decrypt', () => {
-  let certificatePem: Buffer,
-    privateKeyPem: Buffer,
-    context: ApplePaymentTokenContext;
+  let oldContext: ApplePaymentTokenContext,
+    newContext: ApplePaymentTokenContext,
+    fullContext: ApplePaymentTokenContext;
 
   beforeEach(() => {
-    certificatePem = fs.readFileSync(
-      'test/fixtures/certificates/payment-processing/apple_pay.pem'
-    );
-    privateKeyPem = fs.readFileSync(
-      'test/fixtures/certificates/payment-processing/private.key'
-    );
-    context = new ApplePaymentTokenContext({
-      certificatePem,
-      privateKeyPem,
+    oldContext = new ApplePaymentTokenContext({
+      certificatePem: oldCertificatePem,
+      privateKeyPem: oldPrivateKeyPem,
+    });
+    newContext = new ApplePaymentTokenContext({
+      certificatePem: newCertificatePem,
+      privateKeyPem: newPrivateKeyPem,
+    });
+    fullContext = new ApplePaymentTokenContext({
+      primaryCertificatePem: newCertificatePem,
+      primaryPrivateKeyPem: oldPrivateKeyPem,
+      secondaryCertificatePem: newCertificatePem,
+      secondaryPrivateKeyPem: newPrivateKeyPem,
     });
   });
 
-  test('should throw unsupported payment data version', () => {
+  test('should throw when using unsupported payment data version', () => {
     expect(() =>
-      context.decrypt({
+      oldContext.decrypt({
         version: 'RSA_v1',
       } as PaymentTokenPaymentData)
     ).toThrow('Unsupported decryption for payment data version: RSA_v1');
   });
 
-  test.each([
-    [
-      'Web',
-      webToken,
-      {
-        applicationPrimaryAccountNumber: '4784000000380075',
-        applicationExpirationDate: '231231',
-        currencyCode: '840',
-        transactionAmount: 100,
-        deviceManufacturerIdentifier: '040010030273',
-        paymentDataType: '3DSecure',
-        paymentData: {
-          onlinePaymentCryptogram: '/4hD3+cAE5A3VxSlUf4yMAACAAA=',
-          eciIndicator: '7',
-        },
-      },
-    ],
-    [
-      'iOS',
-      iosToken,
-      {
-        applicationPrimaryAccountNumber: '5155272275025002',
-        applicationExpirationDate: '260630',
-        currencyCode: '840',
-        transactionAmount: 1099,
-        deviceManufacturerIdentifier: '050110030273',
-        paymentDataType: '3DSecure',
-        paymentData: {
-          onlinePaymentCryptogram: 'AOPWdiKEcY85ALsfCxqBAoABFA==',
-        },
-      },
-    ],
-  ])(
-    'should decrypt %p Apple Payment elliptic-curve encryption token',
-    (_, token, decrypted) =>
-      expect(
-        context.decrypt(token.paymentData as PaymentTokenPaymentData)
-      ).toStrictEqual(decrypted)
-  );
+  test('should throw when using wrong old certificate', () => {
+    expect(() =>
+      oldContext.decrypt(newToken.paymentData as PaymentTokenPaymentData)
+    ).toThrow(
+      'Unexpected format of decrypted data. Please check payment processing certificate and its private key.'
+    );
+  });
+
+  test('should throw when using wrong new certificate', () => {
+    expect(() =>
+      newContext.decrypt(oldToken.paymentData as PaymentTokenPaymentData)
+    ).toThrow(
+      'Unexpected format of decrypted data. Please check payment processing certificate and its private key.'
+    );
+  });
+
+  test('should decrypt using right old certificate', () => {
+    expect(
+      oldContext.decrypt(oldToken.paymentData as PaymentTokenPaymentData)
+    ).toMatchSnapshot();
+  });
+
+  test('should decrypt using right new certificate', () => {
+    expect(
+      newContext.decrypt(newToken.paymentData as PaymentTokenPaymentData)
+    ).toMatchSnapshot();
+  });
+
+  test('should decrypt using fallback certificate', () => {
+    expect(
+      fullContext.decrypt(newToken.paymentData as PaymentTokenPaymentData)
+    ).toMatchSnapshot();
+    expect(
+      fullContext.decrypt(oldToken.paymentData as PaymentTokenPaymentData)
+    ).toMatchSnapshot();
+  });
 });
