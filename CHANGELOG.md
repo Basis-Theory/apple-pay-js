@@ -1,3 +1,10 @@
+# [1.1.0](https://github.com/Basis-Theory/apple-pay-js/compare/v1.0.1...v1.1.0) (2023-09-13)
+
+
+### Features
+
+* add certificate rotation support ([#23](https://github.com/Basis-Theory/apple-pay-js/issues/23)) ([01b2dfd](https://github.com/Basis-Theory/apple-pay-js/commit/01b2dfdf56037a607eb49d4f33d1863ee50a979f))
+
 ## [1.0.1](https://github.com/Basis-Theory/apple-pay-js/compare/v1.0.0...v1.0.1) (2023-09-11)
 
 
