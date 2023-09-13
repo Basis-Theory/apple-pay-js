@@ -36,10 +36,7 @@ The examples below show how to load certificates from the File System into Buffe
 If you need help understanding the risks associated with decrypting and manipulating the various forms of cardholder data in your own systems, [reach out to us](https://basistheory.com/contact).
 
 ```javascript
-import {
-  ApplePaymentTokenContext,
-  ApplePayPaymentToken,
-} from '@basis-theory/apple-pay-js';
+import { ApplePaymentTokenContext } from '@basis-theory/apple-pay-js';
 import fs from 'fs';
 import token from './test/fixtures/token.new.json';
 
@@ -64,13 +61,10 @@ console.log(context.decrypt(token.paymentData));
 Or using certificate rotation:
 
 ```javascript
-import {
-  ApplePaymentTokenContext,
-  ApplePayPaymentToken,
-} from '@basis-theory/apple-pay-js';
+import { ApplePaymentTokenContext } from '@basis-theory/apple-pay-js';
 import fs from 'fs';
 import newToken from './test/fixtures/token.new.json';
-import oldToken from './test/fixtures/token.new.json';
+import oldToken from './test/fixtures/token.old.json';
 
 // load newer certificates
 const primaryCertificatePem = fs.readFileSync(
