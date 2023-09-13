@@ -1,0 +1,91 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`decrypt should decrypt using fallback certificate 1`] = `
+{
+  "applicationExpirationDate": "290228",
+  "applicationPrimaryAccountNumber": "4784000000380075",
+  "currencyCode": "840",
+  "deviceManufacturerIdentifier": "040010030273",
+  "paymentData": {
+    "eciIndicator": "7",
+    "onlinePaymentCryptogram": "/x2gvNsADhptD1JXWRhcMAACAAA=",
+  },
+  "paymentDataType": "3DSecure",
+  "transactionAmount": 100,
+}
+`;
+
+exports[`decrypt should decrypt using fallback certificate 2`] = `
+{
+  "applicationExpirationDate": "231231",
+  "applicationPrimaryAccountNumber": "4784000000380075",
+  "currencyCode": "840",
+  "deviceManufacturerIdentifier": "040010030273",
+  "paymentData": {
+    "eciIndicator": "7",
+    "onlinePaymentCryptogram": "/4hD3+cAE5A3VxSlUf4yMAACAAA=",
+  },
+  "paymentDataType": "3DSecure",
+  "transactionAmount": 100,
+}
+`;
+
+exports[`decrypt should decrypt using right new certificate 1`] = `
+{
+  "applicationExpirationDate": "290228",
+  "applicationPrimaryAccountNumber": "4784000000380075",
+  "currencyCode": "840",
+  "deviceManufacturerIdentifier": "040010030273",
+  "paymentData": {
+    "eciIndicator": "7",
+    "onlinePaymentCryptogram": "/x2gvNsADhptD1JXWRhcMAACAAA=",
+  },
+  "paymentDataType": "3DSecure",
+  "transactionAmount": 100,
+}
+`;
+
+exports[`decrypt should decrypt using right old certificate 1`] = `
+{
+  "applicationExpirationDate": "231231",
+  "applicationPrimaryAccountNumber": "4784000000380075",
+  "currencyCode": "840",
+  "deviceManufacturerIdentifier": "040010030273",
+  "paymentData": {
+    "eciIndicator": "7",
+    "onlinePaymentCryptogram": "/4hD3+cAE5A3VxSlUf4yMAACAAA=",
+  },
+  "paymentDataType": "3DSecure",
+  "transactionAmount": 100,
+}
+`;
+
+exports[`decrypt should decrypt with fallback certificate 1`] = `
+{
+  "applicationExpirationDate": "290228",
+  "applicationPrimaryAccountNumber": "4784000000380075",
+  "currencyCode": "840",
+  "deviceManufacturerIdentifier": "040010030273",
+  "paymentData": {
+    "eciIndicator": "7",
+    "onlinePaymentCryptogram": "/x2gvNsADhptD1JXWRhcMAACAAA=",
+  },
+  "paymentDataType": "3DSecure",
+  "transactionAmount": 100,
+}
+`;
+
+exports[`decrypt should decrypt with fallback certificate 2`] = `
+{
+  "applicationExpirationDate": "231231",
+  "applicationPrimaryAccountNumber": "4784000000380075",
+  "currencyCode": "840",
+  "deviceManufacturerIdentifier": "040010030273",
+  "paymentData": {
+    "eciIndicator": "7",
+    "onlinePaymentCryptogram": "/4hD3+cAE5A3VxSlUf4yMAACAAA=",
+  },
+  "paymentDataType": "3DSecure",
+  "transactionAmount": 100,
+}
+`;

@@ -48,7 +48,18 @@ export class EllipticCurveDecryptStrategy {
     // some random cruft at the end, such as `�d*�<?}ތ0j{��[`
     const regex = /^[^}]+\}[^}]*\}/gu;
 
-    return JSON.parse(decrypted.match(regex)[0]);
+    const match = decrypted.match(regex);
+
+    try {
+      return JSON.parse(match[0]);
+    } catch (error) {
+      const err = new Error(
+        'Unexpected format of decrypted data. Please check payment processing certificate and its private key.'
+      );
+
+      err.stack = error.stack;
+      throw err;
+    }
   }
 
   /**
