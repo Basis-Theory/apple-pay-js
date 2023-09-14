@@ -2,7 +2,10 @@
   "name": "@basis-theory/apple-pay-js",
   "version": "1.1.0",
   "description": "Basis Theory utility for decrypting Apple Pay Tokens",
-  "repository": "https://github.com/Basis-Theory/apple-pay-js",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Basis-Theory/apple-pay-js"
+  },
   "license": "Apache-2.0",
   "author": {
     "name": "Basis Theory",
