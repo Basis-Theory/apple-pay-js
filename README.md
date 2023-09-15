@@ -15,6 +15,20 @@ Utility library for decrypting Apple Payment Tokens in Node.js environments.
 
 - **Payment Processing Certificate Rotation**: Never worry about missing payments because Apple's certificate rotation has unpredictable behavior. Just add both certificates to the decryption context and rest assured that both new and old tokens will be decrypted during rotation window.
 
+## Apple Pay Setup
+
+A pre-requisite to use this package is that you must have completed your Merchant Apple Pay Setup. This can be a time-consuming process, so the guides below will help you with step-by-step instructions to obtain the necessary files to issue and decrypt Apple Pay Tokens:
+
+1. [Apple Developer Program Enrollment](./guides/apple-developer-program-enrollment.md)
+2. [Create a Merchant ID](./guides/create-merchant-id.md)
+3. [Create a Payment Processing Certificate](./guides/create-payment-processing-certificate.md)
+4. [Create a Merchant Identity Certificate](./guides/create-merchant-identity-certificate.md)
+
+To collect payments with Apple Pay in your frontend, Apple has specific guides for:
+
+- [Web](https://applepaydemo.apple.com/)
+- [iOS](https://developer.apple.com/documentation/passkit/apple_pay/offering_apple_pay_in_your_app)
+
 ## Installation
 
 Install the package using NPM:
@@ -31,7 +45,7 @@ yarn add @basis-theory/apple-pay-js
 
 ## Usage
 
-The examples below show how to load certificates from the File System into Buffers. But you can load them from your KMS, secret manager, configuration, etc.
+The examples below show how to load certificates from the File System into Buffers, using samples from this repository. But you can load them from your KMS, secret manager, configuration, etc.
 
 If you need help understanding the risks associated with decrypting and manipulating the various forms of cardholder data in your own systems, [reach out to us](https://basistheory.com/contact).
 
