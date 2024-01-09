@@ -89,8 +89,12 @@ const context = new ApplePaymentTokenContext({
   ],
 });
 
-// decrypt the token
-console.log(context.decrypt(token.paymentData));
+try {
+  // decrypts Apple's PKPaymentToken paymentData
+  console.log(context.decrypt(token.paymentData));
+} catch (error) {
+  // couldn't decrypt the token with given merchant certificates
+}
 ```
 
 ## Reactors
@@ -100,6 +104,9 @@ This package is available to use in [Reactors](https://developers.basistheory.co
 ```javascript
 const { Buffer } = require('buffer');
 const { ApplePaymentTokenContext } = require('@basis-theory/apple-pay-js');
+const {
+  CustomHttpResponseError,
+} = require('@basis-theory/basis-theory-reactor-formulas-sdk-js');
 
 module.exports = async function (req) {
   const {
@@ -129,33 +136,42 @@ module.exports = async function (req) {
     ],
   });
 
-  // decrypts Apple's PKPaymentToken paymentData
-  const {
-    applicationPrimaryAccountNumber,
-    applicationExpirationDate,
-    ...restPaymentData
-  } = context.decrypt(paymentData);
+  try {
+    // decrypts Apple's PKPaymentToken paymentData
+    const {
+      applicationPrimaryAccountNumber,
+      applicationExpirationDate,
+      ...restPaymentData
+    } = context.decrypt(paymentData);
 
-  // vaults Apple Device PAN (DPAN)
-  const btToken = await bt.tokens.create({
-    type: 'card',
-    data: {
-      number: applicationPrimaryAccountNumber,
-      expiration_month: applicationExpirationDate.slice(2, 4),
-      expiration_year: `20${applicationExpirationDate.slice(-2)}`,
-    },
-  });
-
-  // returns transaction details and vaulted token without sensitive DPAN
-  return {
-    raw: {
-      btToken,
-      applePayToken: {
-        paymentData: restPaymentData,
-        ...applePayToken,
+    // vaults Apple Device PAN (DPAN)
+    const btToken = await bt.tokens.create({
+      type: 'card',
+      data: {
+        number: applicationPrimaryAccountNumber,
+        expiration_month: applicationExpirationDate.slice(2, 4),
+        expiration_year: `20${applicationExpirationDate.slice(-2)}`,
       },
-    },
-  };
+    });
+
+    // returns transaction details and vaulted token without sensitive DPAN
+    return {
+      raw: {
+        btToken,
+        applePayToken: {
+          paymentData: restPaymentData,
+          ...applePayToken,
+        },
+      },
+    };
+  } catch (error) {
+    throw new CustomHttpResponseError({
+      status: 500,
+      body: {
+        message: error.message,
+      },
+    });
+  }
 };
 ```
 

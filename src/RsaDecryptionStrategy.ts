@@ -15,6 +15,9 @@ export class RsaDecryptionStrategy
     this.privateKey = privateKeyPem;
   }
 
+  /**
+   * Decrypting the token using the PEM formatted merchant certificate and private key (the latter of which, at least, is managed by a third-party)
+   */
   public decrypt(
     paymentData: RSAPaymentTokenPaymentData
   ): DecryptedPaymentData {
