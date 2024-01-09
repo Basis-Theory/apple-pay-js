@@ -62,7 +62,7 @@ const context = new ApplePaymentTokenContext({
     {
       // optional certificate identifier
       identifier: 'merchant.basistheory.com-old',
-      // certificate and private key are Buffers in PEM format
+      // the certificate and the private key are Buffers in PEM format
       certificatePem: fs.readFileSync(
         './test/fixtures/ec/apple/apple_pay.new.pem'
       ),
