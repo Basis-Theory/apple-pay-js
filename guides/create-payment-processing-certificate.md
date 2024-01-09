@@ -8,19 +8,33 @@ In the **Apple Pay Payment Processing Certificate** section, click _Create Certi
 
 To create a new CSR, we will use [OpenSSL](https://www.openssl.org/).
 
+---
+
+### RSA (China mainland)
+
+A single command is used to generate a new private key and a CSR:
+
+```bash
+openssl req -newkey rsa:2048 -keyout apple_pay_private.key -out apple_pay.csr -nodes -subj '/O=Company/C=US'
+```
+
+---
+
+### Elliptic Curve (All other regions)
+
 First we must create a new private key:
 
 ```bash
 openssl ecparam -out apple_pay_private.key -name prime256v1 -genkey
 ```
 
-> 💡 Notice how we use `ecparam` to instruct creating a EC (elliptic curve) key. This is because ECC is used for all regions besides China, which uses RSA.
-
 Then, source the private key to create a new CSR:
 
 ```bash
 openssl req -newkey rsa:2048 -new -sha256 -key apple_pay_private.key -nodes -nodes -out apple_pay.csr -subj '/O=Company/C=US'
 ```
+
+---
 
 > 💡 Update the `subj` param to match your company information. For example:
 >
