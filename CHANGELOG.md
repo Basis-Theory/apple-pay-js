@@ -1,3 +1,13 @@
+# [2.0.0](https://github.com/Basis-Theory/apple-pay-js/compare/v1.1.0...v2.0.0) (2024-01-18)
+
+
+* feat!: add support for RSA encryption strategy (#44) ([4b2ade3](https://github.com/Basis-Theory/apple-pay-js/commit/4b2ade355c7a8cec267b4357c52982168c3ac845)), closes [#44](https://github.com/Basis-Theory/apple-pay-js/issues/44)
+
+
+### BREAKING CHANGES
+
+* new context options signature to support multiple certificates
+
 # [1.1.0](https://github.com/Basis-Theory/apple-pay-js/compare/v1.0.1...v1.1.0) (2023-09-13)
 
 
