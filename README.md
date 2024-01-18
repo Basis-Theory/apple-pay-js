@@ -6,14 +6,15 @@ Utility library for decrypting Apple Payment Tokens in Node.js environments.
 
 ## Features
 
-- **Apple Pay Token `PKPaymentToken` Decryption**: Securely decrypt user-authorized Apple Pay transaction tokens using easy-to-interact interfaces.
+- **Apple Pay [PKPaymentToken](https://developer.apple.com/documentation/passkit/apple_pay/payment_token_format_reference) Decryption**: Securely decrypt user-authorized Apple Pay transaction tokens using easy-to-interact interfaces.
 
   | Encryption | Region     | Support |
   | ---------- | ---------- | ------- |
-  | RSA        | China      | ❌      |
-  | ECC        | All Others | ✅      |
+  | RSA_v1     | China      | ✅      |
+  | EC_v1      | All Others | ✅      |
 
 - **Payment Processing Certificate Rotation**: Never worry about missing payments because Apple's certificate rotation has unpredictable behavior. Just add both certificates to the decryption context and rest assured that both new and old tokens will be decrypted during rotation window.
+- **Automatic Decryption Strategy Detection**: Transparent integration for decrypting Apple's Payment Token regardless of the employed encryption standard.
 
 ## Apple Pay Setup
 
@@ -43,7 +44,7 @@ Or Yarn:
 yarn add @basis-theory/apple-pay-js
 ```
 
-## Usage
+## Node.js
 
 The examples below show how to load certificates from the File System into Buffers, using samples from this repository. But you can load them from your KMS, secret manager, configuration, etc.
 
@@ -52,60 +53,48 @@ If you need help understanding the risks associated with decrypting and manipula
 ```javascript
 import { ApplePaymentTokenContext } from '@basis-theory/apple-pay-js';
 import fs from 'fs';
-import token from './test/fixtures/token.new.json';
-
-// load certificates into buffers
-const certificatePem = fs.readFileSync(
-  './test/fixtures/certificates/apple/payment-processing/apple_pay.new.pem'
-);
-const privateKeyPem = fs.readFileSync(
-  './test/fixtures/certificates/apple/payment-processing/private.new.key'
-);
+import token from './test/fixtures/ec/token.new.json';
 
 // create the decryption context
 const context = new ApplePaymentTokenContext({
-  certificatePem,
-  privateKeyPem,
+  // add as many merchant certificates you need
+  merchants: [
+    {
+      // optional certificate identifier
+      identifier: 'merchant.basistheory.com-old',
+      // the certificate and the private key are Buffers in PEM format
+      certificatePem: fs.readFileSync(
+        './test/fixtures/ec/apple/apple_pay.new.pem'
+      ),
+      privateKeyPem: fs.readFileSync(
+        './test/fixtures/ec/apple/private.new.key'
+      ),
+    },
+    {
+      identifier: 'merchant.basistheory.com-new',
+      certificatePem: fs.readFileSync(
+        './test/fixtures/ec/apple/apple_pay.new.pem'
+      ),
+      privateKeyPem: fs.readFileSync(
+        './test/fixtures/ec/apple/private.new.key'
+      ),
+    },
+    {
+      identifier: 'merchant.basistheory.china',
+      certificatePem: fs.readFileSync(
+        './test/fixtures/rsa/apple/apple_pay.pem'
+      ),
+      privateKeyPem: fs.readFileSync('./test/fixtures/rsa/apple/private.key'),
+    },
+  ],
 });
 
-// decrypt the token
-console.log(context.decrypt(token.paymentData));
-```
-
-Or using certificate rotation:
-
-```javascript
-import { ApplePaymentTokenContext } from '@basis-theory/apple-pay-js';
-import fs from 'fs';
-import newToken from './test/fixtures/token.new.json';
-import oldToken from './test/fixtures/token.old.json';
-
-// load newer certificates
-const primaryCertificatePem = fs.readFileSync(
-  './test/fixtures/certificates/apple/payment-processing/apple_pay.new.pem'
-);
-const primaryPrivateKeyPem = fs.readFileSync(
-  './test/fixtures/certificates/apple/payment-processing/private.new.key'
-);
-// load older certificates
-const secondaryCertificatePem = fs.readFileSync(
-  './test/fixtures/certificates/apple/payment-processing/apple_pay.old.pem'
-);
-const secondaryPrivateKeyPem = fs.readFileSync(
-  './test/fixtures/certificates/apple/payment-processing/private.old.key'
-);
-
-// create the decryption context
-const context = new ApplePaymentTokenContext({
-  primaryCertificatePem,
-  primaryPrivateKeyPem,
-  secondaryCertificatePem,
-  secondaryPrivateKeyPem,
-});
-
-// decrypt tokens
-console.log(context.decrypt(oldToken.paymentData));
-console.log(context.decrypt(newToken.paymentData));
+try {
+  // decrypts Apple's PKPaymentToken paymentData
+  console.log(context.decrypt(token.paymentData));
+} catch (error) {
+  // couldn't decrypt the token with given merchant certificates
+}
 ```
 
 ## Reactors
@@ -115,6 +104,9 @@ This package is available to use in [Reactors](https://developers.basistheory.co
 ```javascript
 const { Buffer } = require('buffer');
 const { ApplePaymentTokenContext } = require('@basis-theory/apple-pay-js');
+const {
+  CustomHttpResponseError,
+} = require('@basis-theory/basis-theory-reactor-formulas-sdk-js');
 
 module.exports = async function (req) {
   const {
@@ -132,39 +124,54 @@ module.exports = async function (req) {
 
   // creates token context from certificates / keys configured in Reactor
   const context = new ApplePaymentTokenContext({
-    primaryCertificatePem: Buffer.from(PRIMARY_CERTIFICATE_PEM),
-    primaryPrivateKeyPem: Buffer.from(PRIMARY_PRIVATE_KEY_PEM),
-    secondaryCertificatePem: Buffer.from(SECONDARY_CERTIFICATE_PEM),
-    secondaryPrivateKeyPem: Buffer.from(SECONDARY_PRIVATE_KEY_PEM),
-  });
-
-  // decrypts Apple's PKPaymentToken paymentData
-  const {
-    applicationPrimaryAccountNumber,
-    applicationExpirationDate,
-    ...restPaymentData
-  } = context.decrypt(paymentData);
-
-  // vaults Apple Device PAN (DPAN)
-  const btToken = await bt.tokens.create({
-    type: 'card',
-    data: {
-      number: applicationPrimaryAccountNumber,
-      expiration_month: applicationExpirationDate.slice(2, 4),
-      expiration_year: `20${applicationExpirationDate.slice(-2)}`,
-    },
-  });
-
-  // returns transaction details and vaulted token without sensitive DPAN
-  return {
-    raw: {
-      btToken,
-      applePayToken: {
-        paymentData: restPaymentData,
-        ...applePayToken,
+    merchants: [
+      {
+        certificatePem: Buffer.from(PRIMARY_CERTIFICATE_PEM),
+        privateKeyPem: Buffer.from(PRIMARY_PRIVATE_KEY_PEM),
       },
-    },
-  };
+      {
+        certificatePem: Buffer.from(SECONDARY_CERTIFICATE_PEM),
+        privateKeyPem: Buffer.from(SECONDARY_PRIVATE_KEY_PEM),
+      },
+    ],
+  });
+
+  try {
+    // decrypts Apple's PKPaymentToken paymentData
+    const {
+      applicationPrimaryAccountNumber,
+      applicationExpirationDate,
+      ...restPaymentData
+    } = context.decrypt(paymentData);
+
+    // vaults Apple Device PAN (DPAN)
+    const btToken = await bt.tokens.create({
+      type: 'card',
+      data: {
+        number: applicationPrimaryAccountNumber,
+        expiration_month: applicationExpirationDate.slice(2, 4),
+        expiration_year: `20${applicationExpirationDate.slice(-2)}`,
+      },
+    });
+
+    // returns transaction details and vaulted token without sensitive DPAN
+    return {
+      raw: {
+        btToken,
+        applePayToken: {
+          paymentData: restPaymentData,
+          ...applePayToken,
+        },
+      },
+    };
+  } catch (error) {
+    throw new CustomHttpResponseError({
+      status: 500,
+      body: {
+        message: error.message,
+      },
+    });
+  }
 };
 ```
 

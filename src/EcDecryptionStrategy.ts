@@ -1,8 +1,12 @@
 import * as x509 from '@fidm/x509';
 import * as crypto from 'crypto';
 import * as forge from 'node-forge';
-import type { ApplePaymentTokenContextOptions } from './ApplePaymentTokenContext';
-import type { ECPaymentTokenPaymentData, DecryptedPaymentData } from './types';
+import type { ApplePayMerchantConfiguration } from './ApplePaymentTokenContext';
+import type {
+  DecryptedPaymentData,
+  DecryptionStrategy,
+  ECPaymentTokenPaymentData,
+} from './types';
 
 // couldn't make this work with an import statement using parcel
 // eslint-disable-next-line @typescript-eslint/no-var-requires
@@ -11,11 +15,9 @@ const ECKey = require('ec-key');
 // https://images.apple.com/certificateauthority/pdf/Apple_WWDR_CPS_v1.31.pdf
 const MERCHANT_ID_FIELD_OID = '1.2.840.113635.100.6.32';
 
-/**
- * Initializing an instance of `PaymentToken` with JSON values present in the Apple Payment Token string
- * JSON representation - https://developer.apple.com/library/ios/documentation/PassKit/Reference/PaymentTokenJSON/PaymentTokenJSON.html
- */
-export class EllipticCurveDecryptStrategy {
+export class EcDecryptionStrategy
+  implements DecryptionStrategy<ECPaymentTokenPaymentData>
+{
   // There is no type definitions for ECKey
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   private readonly privateKey: any;
@@ -25,7 +27,7 @@ export class EllipticCurveDecryptStrategy {
   public constructor({
     certificatePem,
     privateKeyPem,
-  }: ApplePaymentTokenContextOptions) {
+  }: ApplePayMerchantConfiguration) {
     this.privateKey = new ECKey(privateKeyPem, 'pem');
     this.merchantId = this.extractMerchantId(certificatePem);
   }
@@ -138,7 +140,7 @@ export class EllipticCurveDecryptStrategy {
     decipher.start({
       iv: IV,
       tagLength: 128,
-      tag,
+      tag: forge.util.createBuffer(tag),
     });
 
     decipher.update(CIPHERTEXT);

@@ -1,16 +1,29 @@
-import { EllipticCurveDecryptStrategy } from './EllipticCurveDecryptStrategy';
-import type { DecryptedPaymentData, PaymentTokenPaymentData } from './types';
+import { ApplePaymentDecryptionError } from './ApplePaymentDecryptionError';
+import { EcDecryptionStrategy } from './EcDecryptionStrategy';
+import { RsaDecryptionStrategy } from './RsaDecryptionStrategy';
+import {
+  DecryptedPaymentData,
+  DecryptionStrategy,
+  PaymentTokenPaymentData,
+} from './types';
 
-interface ApplePaymentTokenContextOptions {
+interface ApplePayMerchantConfiguration {
+  /**
+   * (Optional) Merchant identifier, used for tracking errors.
+   */
+  identifier?: string;
+  /**
+   * Payment processing certificate issued by Apple for the merchant in PEM format.
+   */
   certificatePem: Buffer;
+  /**
+   * Payment processing private key created by the Merchant in PEM format.
+   */
   privateKeyPem: Buffer;
 }
 
-interface ApplePaymentTokenContextWithFallbackOptions {
-  primaryCertificatePem: Buffer;
-  primaryPrivateKeyPem: Buffer;
-  secondaryCertificatePem: Buffer;
-  secondaryPrivateKeyPem: Buffer;
+interface ApplePaymentTokenContextOptions {
+  merchants: ApplePayMerchantConfiguration[];
 }
 
 /**
@@ -18,62 +31,44 @@ interface ApplePaymentTokenContextWithFallbackOptions {
  */
 export class ApplePaymentTokenContext {
   public constructor(
-    private readonly options:
-      | ApplePaymentTokenContextOptions
-      | ApplePaymentTokenContextWithFallbackOptions
-  ) {}
-
-  public decrypt(paymentData: PaymentTokenPaymentData): DecryptedPaymentData {
-    if (
-      (this.options as ApplePaymentTokenContextWithFallbackOptions)
-        .primaryCertificatePem
-    ) {
-      return this.decryptWithFallback(
-        paymentData,
-        this.options as ApplePaymentTokenContextWithFallbackOptions
+    private readonly options: ApplePaymentTokenContextOptions
+  ) {
+    if (!options.merchants.length) {
+      throw new ApplePaymentDecryptionError(
+        'No merchant configuration provided for decryption context.'
       );
     }
+  }
 
-    return this.decryptWithOptions(
-      paymentData,
-      this.options as ApplePaymentTokenContextOptions
+  public decrypt(paymentData: PaymentTokenPaymentData): DecryptedPaymentData {
+    const errors = [];
+
+    for (const merchant of this.options.merchants) {
+      try {
+        return this.decryptForMerchant(paymentData, merchant);
+      } catch (error) {
+        error.merchantIdentifier = merchant.identifier;
+        errors.push(error);
+      }
+    }
+
+    throw new ApplePaymentDecryptionError(
+      'Failed to decrypt payment data using provided merchant configuration(s).',
+      errors
     );
   }
 
-  private decryptWithFallback(
+  private decryptForMerchant(
     paymentData: PaymentTokenPaymentData,
-    options: ApplePaymentTokenContextWithFallbackOptions
+    merchant: ApplePayMerchantConfiguration
   ): DecryptedPaymentData {
-    try {
-      return this.decryptWithOptions(paymentData, {
-        certificatePem: options.primaryCertificatePem,
-        privateKeyPem: options.primaryPrivateKeyPem,
-      });
-    } catch {
-      return this.decryptWithOptions(paymentData, {
-        certificatePem: options.secondaryCertificatePem,
-        privateKeyPem: options.secondaryPrivateKeyPem,
-      });
-    }
-  }
+    const strategy: DecryptionStrategy<PaymentTokenPaymentData> =
+      paymentData.version === 'EC_v1'
+        ? new EcDecryptionStrategy(merchant)
+        : new RsaDecryptionStrategy(merchant);
 
-  private decryptWithOptions(
-    paymentData: PaymentTokenPaymentData,
-    options: ApplePaymentTokenContextOptions
-  ): DecryptedPaymentData {
-    if (paymentData.version === 'EC_v1') {
-      const strategy = new EllipticCurveDecryptStrategy(options);
-
-      return strategy.decrypt(paymentData);
-    }
-
-    throw new Error(
-      `Unsupported decryption for payment data version: ${paymentData.version}`
-    );
+    return strategy.decrypt(paymentData);
   }
 }
 
-export type {
-  ApplePaymentTokenContextOptions,
-  ApplePaymentTokenContextWithFallbackOptions,
-};
+export type { ApplePaymentTokenContextOptions, ApplePayMerchantConfiguration };
