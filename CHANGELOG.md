@@ -1,3 +1,10 @@
+## [2.0.1](https://github.com/Basis-Theory/apple-pay-js/compare/v2.0.0...v2.0.1) (2024-01-26)
+
+
+### Bug Fixes
+
+* update guides ([e1816fb](https://github.com/Basis-Theory/apple-pay-js/commit/e1816fb25011b32c59550198a8e5b376370434c5))
+
 # [2.0.0](https://github.com/Basis-Theory/apple-pay-js/compare/v1.1.0...v2.0.0) (2024-01-18)
 
 
