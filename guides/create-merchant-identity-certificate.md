@@ -31,7 +31,7 @@ Upload the `merchant_id.csr` file in Apple portal to create a new Certificate.
 Download the `merchant_id.cer` file and convert it to PEM format, for later usage:
 
 ```bash
-openssl x509 -inform der -in apple_pay.cer -out apple_pay.pem
+openssl x509 -inform der -in merchant_id.cer -out merchant_id.pem
 ```
 
 > ⚠️ These files are sensitive and should be stored somewhere safe.

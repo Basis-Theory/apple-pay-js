@@ -13,7 +13,7 @@ Utility library for decrypting Apple Payment Tokens in Node.js environments.
   | RSA_v1     | China      | ✅      |
   | EC_v1      | All Others | ✅      |
 
-- **Payment Processing Certificate Rotation**: Never worry about missing payments because Apple's certificate rotation has unpredictable behavior. Just add both certificates to the decryption context and rest assured that both new and old tokens will be decrypted during rotation window.
+- **Payment Processing Certificate Rotation**: Never worry about missing payments because of certificate rotation unpredictable behavior. Just add both certificates to the decryption context and rest assured that both new and old tokens will be decrypted during rotation window.
 - **Automatic Decryption Strategy Detection**: Transparent integration for decrypting Apple's Payment Token regardless of the employed encryption standard.
 
 ## Apple Pay Setup

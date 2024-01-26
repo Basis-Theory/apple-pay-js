@@ -31,7 +31,7 @@ openssl ecparam -out apple_pay_private.key -name prime256v1 -genkey
 Then, source the private key to create a new CSR:
 
 ```bash
-openssl req -newkey rsa:2048 -new -sha256 -key apple_pay_private.key -nodes -nodes -out apple_pay.csr -subj '/O=Company/C=US'
+openssl req -new -sha256 -key apple_pay_private.key -nodes -out apple_pay.csr -subj '/O=Basis Theory Solutions/C=US'
 ```
 
 ---
