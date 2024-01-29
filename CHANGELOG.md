@@ -1,3 +1,10 @@
+## [2.0.2](https://github.com/Basis-Theory/apple-pay-js/compare/v2.0.1...v2.0.2) (2024-01-29)
+
+
+### Bug Fixes
+
+* remove regex breaking decryption for merchant tokens ([#45](https://github.com/Basis-Theory/apple-pay-js/issues/45)) ([0dbcce3](https://github.com/Basis-Theory/apple-pay-js/commit/0dbcce320fa5ce3e192735c0079aefab7a4cf422))
+
 ## [2.0.1](https://github.com/Basis-Theory/apple-pay-js/compare/v2.0.0...v2.0.1) (2024-01-26)
 
 
