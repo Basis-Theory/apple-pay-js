@@ -45,15 +45,8 @@ export class EcDecryptionStrategy
     const symmetricKey = this.deriveSymmetricKey(sharedSecret);
     const decrypted = this.decryptCiphertext(symmetricKey, data);
 
-    // matches the second close brace and returns everything before and including
-    // the second close brace. we need this because the result often returns with
-    // some random cruft at the end, such as `�d*�<?}ތ0j{��[`
-    const regex = /^[^}]+\}[^}]*\}/gu;
-
-    const match = decrypted.match(regex);
-
     try {
-      return JSON.parse(match[0]);
+      return JSON.parse(decrypted);
     } catch (error) {
       const err = new Error(
         'Unexpected format of decrypted data. Please check payment processing certificate and its private key.'
