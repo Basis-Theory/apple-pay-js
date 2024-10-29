@@ -6,6 +6,7 @@ on:
 
 jobs:
   scan-code:
+    environment: PR
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -19,6 +20,7 @@ jobs:
           command: code test --all-sub-projects --severity-threshold=medium
 
   scan-deps:
+    environment: PR
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -32,6 +34,7 @@ jobs:
           args: --all-sub-projects --severity-threshold=high
 
   verify:
+    environment: PR
     runs-on: ubuntu-latest
     env:
       HUSKY: 0 # disables husky hooks
@@ -52,6 +55,6 @@ jobs:
         uses: slavcodev/coverage-monitor-action@1.8.0
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          coverage_path: 'coverage/clover.xml'
+          coverage_path: "coverage/clover.xml"
           threshold_alert: 80
           threshold_warning: 90
