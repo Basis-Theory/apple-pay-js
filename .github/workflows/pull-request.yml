@@ -6,7 +6,6 @@ on:
 
 jobs:
   scan-code:
-    environment: PR
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -20,7 +19,6 @@ jobs:
           command: code test --all-sub-projects --severity-threshold=medium
 
   scan-deps:
-    environment: PR
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -34,7 +32,6 @@ jobs:
           args: --all-sub-projects --severity-threshold=high
 
   verify:
-    environment: PR
     runs-on: ubuntu-latest
     env:
       HUSKY: 0 # disables husky hooks
