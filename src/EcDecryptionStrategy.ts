@@ -1,5 +1,6 @@
 import * as x509 from '@fidm/x509';
 import * as crypto from 'crypto';
+import ECKey from 'ec-key';
 import * as forge from 'node-forge';
 import type { ApplePayMerchantConfiguration } from './ApplePaymentTokenContext';
 import type {
@@ -8,19 +9,13 @@ import type {
   ECPaymentTokenPaymentData,
 } from './types';
 
-// couldn't make this work with an import statement using parcel
-// eslint-disable-next-line @typescript-eslint/no-var-requires
-const ECKey = require('ec-key');
-
 // https://images.apple.com/certificateauthority/pdf/Apple_WWDR_CPS_v1.31.pdf
 const MERCHANT_ID_FIELD_OID = '1.2.840.113635.100.6.32';
 
 export class EcDecryptionStrategy
   implements DecryptionStrategy<ECPaymentTokenPaymentData>
 {
-  // There is no type definitions for ECKey
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  private readonly privateKey: any;
+  private readonly privateKey: ECKey;
 
   private readonly merchantId: string;
 
@@ -63,10 +58,9 @@ export class EcDecryptionStrategy
    * As the Apple Pay certificate is issued using prime256v1 encryption, create elliptic curve key instances using the package - https://www.npmjs.com/package/ec-key
    */
   private generateSharedSecret(ephemeralPublicKey: string): string {
-    const prv = new ECKey(this.privateKey, 'pem'); // Create a new ECkey instance from PEM formatted string
     const publicEc = new ECKey(ephemeralPublicKey, 'spki'); // Create a new ECKey instance from a base-64 spki string
 
-    return prv.computeSecret(publicEc).toString('hex'); // Compute secret using private key for provided ephemeral public key
+    return this.privateKey.computeSecret(publicEc).toString('hex'); // Compute secret using private key for provided ephemeral public key
   }
 
   /**
