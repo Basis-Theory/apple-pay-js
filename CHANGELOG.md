@@ -1,3 +1,10 @@
+## [2.0.3](https://github.com/Basis-Theory/apple-pay-js/compare/v2.0.2...v2.0.3) (2025-09-19)
+
+
+### Bug Fixes
+
+* upgrade ec-key ([#52](https://github.com/Basis-Theory/apple-pay-js/issues/52)) ([330927f](https://github.com/Basis-Theory/apple-pay-js/commit/330927fa671b9f9fb563b9f65f299777eeaec6cf))
+
 ## [2.0.2](https://github.com/Basis-Theory/apple-pay-js/compare/v2.0.1...v2.0.2) (2024-01-29)
 
 
