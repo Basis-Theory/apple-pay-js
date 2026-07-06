@@ -1,6 +1,6 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`decrypt should decrypt using fallback certificate 1`] = `
+exports[`decrypt should decrypt using EC 1`] = `
 {
   "applicationExpirationDate": "290228",
   "applicationPrimaryAccountNumber": "4784000000380075",
@@ -15,7 +15,22 @@ exports[`decrypt should decrypt using fallback certificate 1`] = `
 }
 `;
 
-exports[`decrypt should decrypt using fallback certificate 2`] = `
+exports[`decrypt should decrypt using RSA 1`] = `
+{
+  "applicationExpirationDate": "290228",
+  "applicationPrimaryAccountNumber": "4784000000380075",
+  "currencyCode": "840",
+  "deviceManufacturerIdentifier": "040010030273",
+  "paymentData": {
+    "eciIndicator": "7",
+    "onlinePaymentCryptogram": "/w87QS0AExt/z6EPXrU2MAACAAA=",
+  },
+  "paymentDataType": "3DSecure",
+  "transactionAmount": 100,
+}
+`;
+
+exports[`decrypt should support rotation 1`] = `
 {
   "applicationExpirationDate": "231231",
   "applicationPrimaryAccountNumber": "4784000000380075",
@@ -30,7 +45,7 @@ exports[`decrypt should decrypt using fallback certificate 2`] = `
 }
 `;
 
-exports[`decrypt should decrypt using right new certificate 1`] = `
+exports[`decrypt should support rotation 2`] = `
 {
   "applicationExpirationDate": "290228",
   "applicationPrimaryAccountNumber": "4784000000380075",
@@ -45,15 +60,15 @@ exports[`decrypt should decrypt using right new certificate 1`] = `
 }
 `;
 
-exports[`decrypt should decrypt using right old certificate 1`] = `
+exports[`decrypt should support rotation 3`] = `
 {
-  "applicationExpirationDate": "231231",
+  "applicationExpirationDate": "290228",
   "applicationPrimaryAccountNumber": "4784000000380075",
   "currencyCode": "840",
   "deviceManufacturerIdentifier": "040010030273",
   "paymentData": {
     "eciIndicator": "7",
-    "onlinePaymentCryptogram": "/4hD3+cAE5A3VxSlUf4yMAACAAA=",
+    "onlinePaymentCryptogram": "/w87QS0AExt/z6EPXrU2MAACAAA=",
   },
   "paymentDataType": "3DSecure",
   "transactionAmount": 100,
