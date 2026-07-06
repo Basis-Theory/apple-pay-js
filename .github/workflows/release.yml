@@ -8,10 +8,12 @@ jobs:
   build-release:
     environment: PROD
     runs-on: ubuntu-latest
+    permissions:
+      id-token: write # npm OIDC trusted publishing
+      contents: read
     env:
       CI: 1
       HUSKY: 0 # disables husky hooks
-      NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
     steps:
       - name: Mint semantic-release app token
         id: app-token
@@ -35,11 +37,14 @@ jobs:
           slack-api-token: ${{ secrets.SLACK_DUCKBOT_API_KEY }}
           channel: ${{ vars.SLACK_DUCKBOT_RELEASE_CHANNEL_ID }}
 
-      - name: Use Node LTS
+      - name: Use Node 22
         uses: actions/setup-node@3235b876344d2a9aa001b8d1453c930bba69e610 # v3
         with:
           cache: yarn
-          node-version: lts/*
+          node-version: "22"
+
+      - name: Update npm for OIDC trusted publishing
+        run: npm install -g npm@latest # npm >= 11.5.1 required for OIDC
 
       - name: Install deps (with cache)
         uses: bahmutov/npm-install@20216767ca67f0f7b4d095dc5859c5700a6581cb # v1
