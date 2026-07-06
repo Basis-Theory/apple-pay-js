@@ -1,7 +1,7 @@
 interface BasePaymentHeader {
   applicationData?: string;
   publicKeyHash: string;
-  transactionId;
+  transactionId: string;
 }
 
 interface ECPaymentHeader extends BasePaymentHeader {
@@ -177,7 +177,13 @@ type DecryptedPaymentData =
   | ThreeDSDecryptedPaymentData
   | EMVDecryptedPaymentData;
 
+interface DecryptionStrategy<T extends PaymentTokenPaymentData> {
+  decrypt(paymentData: T): DecryptedPaymentData;
+}
+
 export type {
+  DecryptionStrategy,
+  RSAPaymentTokenPaymentData,
   ECPaymentTokenPaymentData,
   PaymentTokenPaymentData,
   DecryptedPaymentData,

@@ -1,85 +1,105 @@
 import * as fs from 'fs';
 import { ApplePaymentTokenContext, PaymentTokenPaymentData } from '../src';
-import newToken from './fixtures/token.new.json';
-import oldToken from './fixtures/token.old.json';
+import newEcToken from './fixtures/ec/token.new.json';
+import oldEcToken from './fixtures/ec/token.old.json';
+import rsaToken from './fixtures/rsa/token.json';
 
-const oldCertificatePem = fs.readFileSync(
-  'test/fixtures/certificates/payment-processing/apple_pay.old.pem'
-);
-const oldPrivateKeyPem = fs.readFileSync(
-  'test/fixtures/certificates/payment-processing/private.old.key'
-);
-const newCertificatePem = fs.readFileSync(
-  'test/fixtures/certificates/payment-processing/apple_pay.new.pem'
-);
-const newPrivateKeyPem = fs.readFileSync(
-  'test/fixtures/certificates/payment-processing/private.new.key'
-);
+const oldEcCert = fs.readFileSync('test/fixtures/ec/apple_pay.old.pem');
+const oldEcKey = fs.readFileSync('test/fixtures/ec/private.old.key');
+const newEcCert = fs.readFileSync('test/fixtures/ec/apple_pay.new.pem');
+const newEcKey = fs.readFileSync('test/fixtures/ec/private.new.key');
+
+const rsaCert = fs.readFileSync('test/fixtures/rsa/apple_pay.pem');
+const rsaKey = fs.readFileSync('test/fixtures/rsa/private.key');
 
 describe('decrypt', () => {
-  let oldContext: ApplePaymentTokenContext,
-    newContext: ApplePaymentTokenContext,
+  let ecContext: ApplePaymentTokenContext,
+    rsaContext: ApplePaymentTokenContext,
     fullContext: ApplePaymentTokenContext;
 
   beforeEach(() => {
-    oldContext = new ApplePaymentTokenContext({
-      certificatePem: oldCertificatePem,
-      privateKeyPem: oldPrivateKeyPem,
+    ecContext = new ApplePaymentTokenContext({
+      merchants: [
+        {
+          identifier: 'ec',
+          certificatePem: newEcCert,
+          privateKeyPem: newEcKey,
+        },
+      ],
     });
-    newContext = new ApplePaymentTokenContext({
-      certificatePem: newCertificatePem,
-      privateKeyPem: newPrivateKeyPem,
+    rsaContext = new ApplePaymentTokenContext({
+      merchants: [
+        {
+          identifier: 'rsa',
+          certificatePem: rsaCert,
+          privateKeyPem: rsaKey,
+        },
+      ],
     });
     fullContext = new ApplePaymentTokenContext({
-      primaryCertificatePem: newCertificatePem,
-      primaryPrivateKeyPem: oldPrivateKeyPem,
-      secondaryCertificatePem: newCertificatePem,
-      secondaryPrivateKeyPem: newPrivateKeyPem,
+      merchants: [
+        {
+          identifier: 'oldEc',
+          certificatePem: oldEcCert,
+          privateKeyPem: oldEcKey,
+        },
+        {
+          identifier: 'newEc',
+          certificatePem: newEcCert,
+          privateKeyPem: newEcKey,
+        },
+        {
+          identifier: 'rsa',
+          certificatePem: rsaCert,
+          privateKeyPem: rsaKey,
+        },
+      ],
     });
   });
 
-  test('should throw when using unsupported payment data version', () => {
-    expect(() =>
-      oldContext.decrypt({
-        version: 'RSA_v1',
-      } as PaymentTokenPaymentData)
-    ).toThrow('Unsupported decryption for payment data version: RSA_v1');
-  });
-
-  test('should throw when using wrong old certificate', () => {
-    expect(() =>
-      oldContext.decrypt(newToken.paymentData as PaymentTokenPaymentData)
-    ).toThrow(
-      'Unexpected format of decrypted data. Please check payment processing certificate and its private key.'
+  test('should throw when no merchant configuration is provided', () => {
+    expect(() => new ApplePaymentTokenContext({ merchants: [] })).toThrow(
+      'No merchant configuration provided for decryption context.'
     );
   });
 
-  test('should throw when using wrong new certificate', () => {
+  test('should throw when using old certificate', () => {
     expect(() =>
-      newContext.decrypt(oldToken.paymentData as PaymentTokenPaymentData)
+      ecContext.decrypt(oldEcToken.paymentData as PaymentTokenPaymentData)
     ).toThrow(
-      'Unexpected format of decrypted data. Please check payment processing certificate and its private key.'
+      'Failed to decrypt payment data using provided merchant configuration(s).'
     );
   });
 
-  test('should decrypt using right old certificate', () => {
+  test('should throw when using wrong certificate type', () => {
+    expect(() =>
+      rsaContext.decrypt(newEcToken.paymentData as PaymentTokenPaymentData)
+    ).toThrow(
+      'Failed to decrypt payment data using provided merchant configuration(s).'
+    );
+  });
+
+  test('should decrypt using RSA', () => {
     expect(
-      oldContext.decrypt(oldToken.paymentData as PaymentTokenPaymentData)
+      rsaContext.decrypt(rsaToken.paymentData as PaymentTokenPaymentData)
     ).toMatchSnapshot();
   });
 
-  test('should decrypt using right new certificate', () => {
+  test('should decrypt using EC', () => {
     expect(
-      newContext.decrypt(newToken.paymentData as PaymentTokenPaymentData)
+      ecContext.decrypt(newEcToken.paymentData as PaymentTokenPaymentData)
     ).toMatchSnapshot();
   });
 
-  test('should decrypt using fallback certificate', () => {
+  test('should support rotation', () => {
     expect(
-      fullContext.decrypt(newToken.paymentData as PaymentTokenPaymentData)
+      fullContext.decrypt(oldEcToken.paymentData as PaymentTokenPaymentData)
     ).toMatchSnapshot();
     expect(
-      fullContext.decrypt(oldToken.paymentData as PaymentTokenPaymentData)
+      fullContext.decrypt(newEcToken.paymentData as PaymentTokenPaymentData)
+    ).toMatchSnapshot();
+    expect(
+      fullContext.decrypt(rsaToken.paymentData as PaymentTokenPaymentData)
     ).toMatchSnapshot();
   });
 });
