@@ -51,4 +51,4 @@ jobs:
         with:
           slack-api-token: ${{ secrets.SLACK_DUCKBOT_API_KEY }}
           channel: ${{ vars.SLACK_DUCKBOT_RELEASE_CHANNEL_ID }}
-          status: "done"
+          status: 'done'
