@@ -1,3 +1,11 @@
+## [2.0.4](https://github.com/Basis-Theory/apple-pay-js/compare/v2.0.3...v2.0.4) (2026-07-07)
+
+
+### Bug Fixes
+
+* bump node-forge to 1.4.0 to resolve high/critical CVEs ([#58](https://github.com/Basis-Theory/apple-pay-js/issues/58)) ([a73e07f](https://github.com/Basis-Theory/apple-pay-js/commit/a73e07ffccc03410e4f4f619595650adb6bee754))
+* remove orphaned npm-install run line breaking the release workflow ([#60](https://github.com/Basis-Theory/apple-pay-js/issues/60)) ([ca4abf4](https://github.com/Basis-Theory/apple-pay-js/commit/ca4abf485570350424aaf8c5e30b0f011b7a9908))
+
 ## [2.0.3](https://github.com/Basis-Theory/apple-pay-js/compare/v2.0.2...v2.0.3) (2025-09-19)
 
 
